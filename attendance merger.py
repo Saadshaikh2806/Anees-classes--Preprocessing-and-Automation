@@ -1,9 +1,11 @@
 import csv
 from collections import defaultdict
 import os
-import sys
 import re
 import openpyxl
+import sys  # Add this line to import sys
+
+# Rest of your code remains the same
 
 def get_file_path(prompt):
     print(prompt)
@@ -77,29 +79,34 @@ def read_attendance_data(file_path):
                     }
     return attendance_data
 
-def read_contact_info(file_path):
+def read_all_contact_files():
     contact_info = {}
-    if file_path.lower().endswith('.xlsx'):
-        workbook = openpyxl.load_workbook(file_path, read_only=True)
-        sheet = workbook.active
-        headers = [cell.value for cell in sheet[1]]
-        for row in sheet.iter_rows(min_row=2, values_only=True):
-            name = row[headers.index('Name')]
-            contact_info[name] = {
-                'Mother/Guardian Contact No.': row[headers.index('Mother/Guardian Contact No.')],
-                'Father/Guardian Contact No.': row[headers.index('Father/Guardian Contact No.')],
-                'Student Contact No.': row[headers.index('Student Contact No.')]
-            }
-    else:  # Assume CSV if not XLSX
-        with open(file_path, 'r') as file:
-            csv_reader = csv.DictReader(file)
-            for row in csv_reader:
-                name = row['Name']
-                contact_info[name] = {
-                    'Mother/Guardian Contact No.': row['Mother/Guardian Contact No.'],
-                    'Father/Guardian Contact No.': row['Father/Guardian Contact No.'],
-                    'Student Contact No.': row['Student Contact No.']
-                }
+    data_dir = 'Data'
+    for file_name in os.listdir(data_dir):
+        file_path = os.path.join(data_dir, file_name)
+        if file_name.lower().endswith('.xlsx'):
+            workbook = openpyxl.load_workbook(file_path, read_only=True)
+            sheet = workbook.active
+            headers = [cell.value for cell in sheet[1]]
+            if 'Name' in headers:
+                for row in sheet.iter_rows(min_row=2, values_only=True):
+                    name = row[headers.index('Name')]
+                    contact_info[name] = {
+                        'Mother/Guardian Contact No.': row[headers.index('Mother/Guardian Contact No.')],
+                        'Father/Guardian Contact No.': row[headers.index('Father/Guardian Contact No.')],
+                        'Student Contact No.': row[headers.index('Student Contact No.')]
+                    }
+        elif file_name.lower().endswith('.csv'):
+            with open(file_path, 'r') as file:
+                csv_reader = csv.DictReader(file)
+                if 'Name' in csv_reader.fieldnames:
+                    for row in csv_reader:
+                        name = row['Name']
+                        contact_info[name] = {
+                            'Mother/Guardian Contact No.': row.get('Mother/Guardian Contact No.'),
+                            'Father/Guardian Contact No.': row.get('Father/Guardian Contact No.'),
+                            'Student Contact No.': row.get('Student Contact No.')
+                        }
     return contact_info
 
 def merge_data(attendance_data, contact_info):
@@ -187,16 +194,14 @@ def main():
     print("Welcome to the Attendance Merger!")
     
     attendance_file = get_file_path("Please drag and drop the attendance file (CSV or XLSX):")
-    contact_file = get_file_path("Please drag and drop the contact info file (CSV or XLSX):")
     
     output_file = 'ATTENDANCE_MERGER.xlsx'
     
     print("\nProcessing files...")
     print(f"Attendance file: {attendance_file}")
-    print(f"Contact info file: {contact_file}")
     
     attendance_data = read_attendance_data(attendance_file)
-    contact_info = read_contact_info(contact_file)
+    contact_info = read_all_contact_files()
     merged_data = merge_data(attendance_data, contact_info)
     write_merged_data(merged_data, output_file)
     

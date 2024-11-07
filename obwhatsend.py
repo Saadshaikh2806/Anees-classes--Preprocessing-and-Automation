@@ -31,22 +31,17 @@ def send_whatsapp_message_via_url(phone_number, message, name, recipient):
     try:
         logging.info(f"Sending to {name}'s {recipient}")
         
-        # Speed optimization: Pre-encode message
         encoded_message = urllib.parse.quote(message)
         url = f"https://web.whatsapp.com/send?phone={phone_number}&text={encoded_message}"
         
-        # Speed optimization: Use new=2 for faster tab opening
         webbrowser.open(url, new=2, autoraise=False)
         
-        # Speed optimization: Dynamic wait based on system performance
         if os.name == 'nt':  # Windows
-            time.sleep(8)  # Windows typically needs less time
-        else:
-            time.sleep(10)  # Other OS might need slightly more time
+            time.sleep(8)
         
-        # Speed optimization: Quick send and close
+        
         pyautogui.press("enter")
-        time.sleep(1)  # Minimum wait for send
+        time.sleep(1)
         pyautogui.hotkey("ctrl", "w")
         
         return True
@@ -59,43 +54,54 @@ def send_whatsapp_message_via_url(phone_number, message, name, recipient):
             pass
         return False
 
-def create_nda_message(name, roll_no, exams, recipient_type):
-    """Create NDA message with pre-formatted strings for speed."""
+def get_exam_total_marks(exam_name):
+    """Determine total marks based on exam type."""
+    exam_upper = exam_name.upper()
+    if "MATHS" in exam_upper:
+        return "300"
+    elif "GAT" in exam_upper:
+        return "600"
+    elif "JEE" in exam_upper:
+        return "360"
+    elif "NEET" in exam_upper:
+        return "720"
+    elif "CLAT" in exam_upper:
+        return "120"
+    elif "MHT-CET " in exam_upper:
+        return "50"
+    return "0"  # Default case
+
+def create_exam_message(name, roll_no, exams, recipient_type, exam_category):
+    """Generic message creator for all exam types."""
     greeting = "*🗓 Greetings from Anees Defence Career Institute Pune (ADCI) 🗓*\n\n"
+    
+    category_texts = {
+        "nda": "NDA weekly tests",
+        "jee_neet": "weekly JEE/NEET tests",
+        "clat": "CLAT weekly tests",
+        "mhtcet": "MHTCET weekly tests"
+    }
+    
     if recipient_type == "student":
-        message = f"{greeting}Dear {name},\n\n🧾 Your Academic progress for the following tests is as below: 🧾\n\n"
+        message = f"{greeting}Dear {name},\n\n🧾 Your Academic progress for the following {category_texts[exam_category]} is as below: 🧾\n\n"
     else:
-        message = f"{greeting}Dear Parent,\n\n🧾 The Academic progress detail of your ward {name} for the following tests is as below: 🧾\n\n"
+        message = f"{greeting}Dear Parent,\n\n🧾 The Academic progress detail of your ward {name} for the following {category_texts[exam_category]} is as below: 🧾\n\n"
     
     message += f"📝 Roll No: {roll_no}\n\n"
 
     for exam_name, marks in exams.items():
-        total = "300" if "MATHS" in exam_name.upper() else "600"
-        message += f"📊 {exam_name} Exam details -\nTotal Marks - {marks}/{total}\n\n"
+        total_marks = get_exam_total_marks(exam_name)
+        message += f"📊 {exam_name} Test details -\nTotal Marks - {marks}/{total_marks}\n\n"
 
-    message += ("Regards,\nTeam ADCI\n\n"
-                "📌 Note- NDA WEEKLY MATHS/GAT- OBJECTIVE TESTS\n"
-                "✏PARENTS Do visit the Academy on a regular basis for your ward's progress.\n"
-                "✏Check the Official ADCI Parents-Students WhatsApp group daily for new informative updates from ADCI.")
-    
-    return message
+    notes = {
+        "nda": "📌 Note- NDA WEEKLY MATHS/GAT- OBJECTIVE TESTS",
+        "jee_neet": "📌 Note- Weekly JEE (360 marks) and NEET (720 marks) tests are conducted to track progress",
+        "clat": "📌 Note- Weekly CLAT (120 marks) tests are conducted to track progress",
+        "mhtcet": "📌 Note- Weekly MHTCET (150 marks) tests are conducted to track progress"
+    }
 
-def create_jee_neet_message(name, roll_no, exams, recipient_type):
-    """Create JEE/NEET message with pre-formatted strings for speed."""
-    greeting = "*🗓 Greetings from Anees Defence Career Institute Pune (ADCI) 🗓*\n\n"
-    if recipient_type == "student":
-        message = f"{greeting}Dear {name},\n\n🧾 Your Academic progress for the following weekly JEE/NEET tests is as below: 🧾\n\n"
-    else:
-        message = f"{greeting}Dear Parent,\n\n🧾 The Academic progress detail of your ward {name} for the following weekly JEE/NEET tests is as below: 🧾\n\n"
-    
-    message += f"📝 Roll No: {roll_no}\n\n"
-
-    for exam_name, marks in exams.items():
-        total = "360" if "JEE" in exam_name.upper() else "720"
-        message += f"📊 {exam_name} Test details -\nTotal Marks - {marks}/{total}\n\n"
-
-    message += ("Regards,\nTeam ADCI\n\n"
-                "📌 Note- Weekly JEE (360 marks) and NEET (720 marks) tests are conducted to track progress\n"
+    message += (f"Regards,\nTeam ADCI\n\n"
+                f"{notes[exam_category]}\n"
                 "✏PARENTS Do visit the Academy on a regular basis for your ward's progress.\n"
                 "✏Check the Official ADCI Parents-Students WhatsApp group daily for new informative updates from ADCI.")
     
@@ -109,16 +115,19 @@ def process_data(df):
         name = row['Name']
         roll_no = row['Roll No']
         
-        # Speed optimization: Process phone numbers once
         phone_numbers = {
             "student": f"+91{remove_trailing_zeros(row['Student Contact No.'])}" if pd.notna(row['Student Contact No.']) else None,
             "father": f"+91{remove_trailing_zeros(row['Father/Guardian Contact No.'])}" if pd.notna(row['Father/Guardian Contact No.']) else None,
             "mother": f"+91{remove_trailing_zeros(row['Mother/Guardian Contact No.'])}" if pd.notna(row['Mother/Guardian Contact No.']) else None
         }
         
-        # Speed optimization: Process exams once
-        nda_exams = {}
-        jee_neet_exams = {}
+        # Categorize exams
+        exam_categories = {
+            "nda": {},
+            "jee_neet": {},
+            "clat": {},
+            "mhtcet": {}
+        }
         
         for i in range(1, (len(df.columns) - 4) // 2 + 1):
             if f'Exam{i}' in df.columns and f'Total Marks{i}' in df.columns:
@@ -128,22 +137,27 @@ def process_data(df):
                 if pd.notna(exam_name) and str(exam_name).strip():
                     marks = remove_trailing_zeros(marks) if pd.notna(marks) else "Absent"
                     
-                    if isinstance(exam_name, str) and ("JEE" in exam_name.upper() or "NEET" in exam_name.upper()):
-                        jee_neet_exams[exam_name] = marks
-                    else:
-                        nda_exams[exam_name] = marks
+                    if isinstance(exam_name, str):
+                        exam_upper = exam_name.upper()
+                        if "JEE" in exam_upper or "NEET" in exam_upper:
+                            exam_categories["jee_neet"][exam_name] = marks
+                        elif "CLAT" in exam_upper:
+                            exam_categories["clat"][exam_name] = marks
+                        elif "MHTCET" in exam_upper:
+                            exam_categories["mhtcet"][exam_name] = marks
+                        else:  # NDA/GAT/MATHS
+                            exam_categories["nda"][exam_name] = marks
         
-        # Speed optimization: Pre-generate messages
-        messages = {
-            "nda": {
-                "student": create_nda_message(name, roll_no, nda_exams, "student") if nda_exams else None,
-                "parent": create_nda_message(name, roll_no, nda_exams, "parent") if nda_exams else None
-            },
-            "jee_neet": {
-                "student": create_jee_neet_message(name, roll_no, jee_neet_exams, "student") if jee_neet_exams else None,
-                "parent": create_jee_neet_message(name, roll_no, jee_neet_exams, "parent") if jee_neet_exams else None
-            }
-        }
+        # Generate messages for each category
+        messages = {}
+        for category, exams in exam_categories.items():
+            if exams:
+                messages[category] = {
+                    "student": create_exam_message(name, roll_no, exams, "student", category),
+                    "parent": create_exam_message(name, roll_no, exams, "parent", category)
+                }
+            else:
+                messages[category] = {"student": None, "parent": None}
         
         processed_data.append((name, phone_numbers, messages))
     
@@ -151,7 +165,6 @@ def process_data(df):
 
 def send_messages(file_path, status_label):
     try:
-        # Load and pre-process data
         df = pd.read_csv(file_path) if file_path.endswith('.csv') else pd.read_excel(file_path)
         df.columns = df.columns.str.strip()
         
@@ -165,7 +178,7 @@ def send_messages(file_path, status_label):
             
             for recipient, phone in phone_numbers.items():
                 if phone:
-                    for exam_type in ["nda", "jee_neet"]:
+                    for exam_type in ["nda", "jee_neet", "clat", "mhtcet"]:
                         message = messages[exam_type]["student" if recipient == "student" else "parent"]
                         if message:
                             if send_whatsapp_message_via_url(phone, message, name, f"{recipient} ({exam_type.upper()})"):
@@ -180,11 +193,9 @@ def send_messages(file_path, status_label):
 class App(TkinterDnD.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Integrated Exam Message Sender (NDA, JEE, NEET)")
+        self.title("Integrated Exam Message Sender (NDA, JEE, NEET, CLAT, MHTCET)")
         self.geometry("600x400")
         self.configure(bg="#2c3e50")
-
-        # Speed optimization: Create widgets once
         self.create_widgets()
         self.file_path = None
 
