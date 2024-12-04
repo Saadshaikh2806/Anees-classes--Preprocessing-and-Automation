@@ -40,13 +40,12 @@ def send_whatsapp_message_via_url(phone_number, message, name, recipient):
         
         # Speed optimization: Dynamic wait based on system performance
         if os.name == 'nt':  # Windows
-            time.sleep(8)  # Windows typically needs less time
-        else:
-            time.sleep(10)  # Other OS might need slightly more time
+            time.sleep(6)  # Windows typically needs less time
+
         
         # Speed optimization: Quick send and close
         pyautogui.press("enter")
-        time.sleep(1)  # Minimum wait for send
+        time.sleep(2)  # Minimum wait for send
         pyautogui.hotkey("ctrl", "w")
         
         return True

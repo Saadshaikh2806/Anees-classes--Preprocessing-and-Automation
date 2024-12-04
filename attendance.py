@@ -62,131 +62,138 @@ def send_whatsapp_message_via_url(phone_number, message, name, recipient):
             pass
         return False
 
-def get_ordinal_suffix(day):
-    """Get ordinal suffix for day."""
-    if 11 <= day <= 13:
-        return 'th'
-    return {1: 'st', 2: 'nd', 3: 'rd'}.get(day % 10, 'th')
+def convert_to_12hour(time_str):
+    """Convert 24-hour time format to 12-hour format with AM/PM."""
+    try:
+        # Parse the time string
+        time_obj = datetime.strptime(time_str, "%H:%M")
+        # Convert to 12-hour format
+        return time_obj.strftime("%I:%M %p")
+    except ValueError:
+        return time_str  # Return original if conversion fails
 
-def create_attendance_message(name, roll_no, attendance_records, recipient_type, date_range):
-    """Create optimized attendance message with pre-formatted strings."""
-    greeting = "*🗓 Greetings from Anees Defence Career Institute Pune (ADCI) 🗓*\n\n"
-    
-    # Speed optimization: Use string formatting instead of concatenation
-    message = (
-        f"{greeting}"
-        f"Dear {('Parent of ' + name) if recipient_type == 'parent' else name},\n\n"
-        f"🧾 The attendance details {'of your ward ' if recipient_type == 'parent' else ''}"
-        f"for the period {date_range} are as below: 🧾\n\n"
-        f"📝 Name: {name}\n"
-        f"📝 Roll No: {roll_no}\n\n"
-    )
-
-    # Speed optimization: Pre-calculate attendance stats
-    total_lectures = 0
-    total_present = 0
-    
-    # Build attendance details
-    for date, lectures in attendance_records.items():
-        date_obj = datetime.strptime(date, "%d-%m")
-        formatted_date = date_obj.strftime(f"%d{get_ordinal_suffix(date_obj.day)} %b")
-        message += f"📅 {formatted_date}:\n"
+def read_attendance_data(file_path):
+    """Read and process attendance data from Excel file."""
+    try:
+        df = pd.read_excel(file_path)
         
-        for time, status in lectures.items():
-            message += f"    {time}: {status}\n"
-            total_lectures += 1
-            if status == 'P':
-                total_present += 1
-
-    # Calculate attendance percentage
-    attendance_percentage = (total_present / total_lectures * 100) if total_lectures > 0 else 0
-    
-    # Speed optimization: Use single f-string for stats
-    message += (
-        f"\nTotal Lectures: {total_lectures}\n"
-        f"Total Present: {total_present}\n"
-        f"Attendance Percentage: {attendance_percentage:.2f}%\n\n"
-        "Regards,\nTeam ADCI\n\n"
-        "✏️ PARENTS, please ensure your ward attends all classes regularly and stays updated on their progress.\n"
-        "📌 Note- Daily attendance for multiple lectures is essential for monitoring academic performance."
-    )
-    
-    return message
+        # Get the base columns and time columns
+        base_columns = ['EMP CODE', 'NAME', 'MOTHER NO', 'FATHER NO', 'SELF NO']
+        time_columns = [col for col in df.columns if col.startswith('Time')]
+        
+        # Create a mapping for our standardized column names
+        column_mapping = {
+            'EMP CODE': 'EMP_CODE',
+            'NAME': 'NAME',
+            'MOTHER NO': 'MOTHER_NO',
+            'FATHER NO': 'FATHER_NO',
+            'SELF NO': 'SELF_NO'
+        }
+        # Add time columns to mapping
+        for col in time_columns:
+            column_mapping[col] = col.replace(' ', '_')
+            
+        # Rename columns using the mapping
+        df = df.rename(columns=column_mapping)
+        
+        # Process contact information
+        df['CONTACTS'] = df.apply(lambda row: {
+            'mother': str(row['MOTHER_NO']) if pd.notna(row['MOTHER_NO']) else None,
+            'father': str(row['FATHER_NO']) if pd.notna(row['FATHER_NO']) else None,
+            'self': str(row['SELF_NO']) if pd.notna(row['SELF_NO']) else None
+        }, axis=1)
+        
+        return df
+    except Exception as e:
+        logging.error(f"Error reading attendance data: {str(e)}")
+        raise
 
 def process_attendance_data(df):
-    """Pre-process attendance data for faster message sending."""
-    processed_data = []
+    """Process attendance data and prepare messages."""
+    messages = []
+    current_date = datetime.now().strftime("%d-%m-%Y")
     
-    # Extract date columns
-    date_columns = [col for col in df.columns if '-' in col and ':' in col]
-    date_range = f"{date_columns[0].split()[0]} to {date_columns[-1].split()[0]}"
+    # Get all time columns dynamically
+    time_columns = [col for col in df.columns if col.startswith('Time_')]
     
     for _, row in df.iterrows():
-        name = row['Name']
-        roll_no = row['Roll No.']
+        contacts = row['CONTACTS']
         
-        # Speed optimization: Process phone numbers once
-        phone_numbers = {
-            "student": f"+91{remove_trailing_zeros(row['Student Contact No.'])}" if pd.notna(row['Student Contact No.']) else None,
-            "father": f"+91{remove_trailing_zeros(row['Father/Guardian Contact No.'])}" if pd.notna(row['Father/Guardian Contact No.']) else None,
-            "mother": f"+91{remove_trailing_zeros(row['Mother/Guardian Contact No.'])}" if pd.notna(row['Mother/Guardian Contact No.']) else None
-        }
-        
-        # Speed optimization: Process attendance records once
+        # Get attendance records
         attendance_records = {}
-        for col in date_columns:
-            date_time = col.split()
-            if len(date_time) >= 2:
-                date = date_time[0]
-                time = ' '.join(date_time[1:])
-                
-                try:
-                    date_obj = datetime.strptime(date, "%d-%m")
-                    formatted_date = date_obj.strftime("%d-%m")
-                    
-                    if formatted_date not in attendance_records:
-                        attendance_records[formatted_date] = {}
-                    
-                    attendance_records[formatted_date][time] = 'P' if row[col] == 'P' else 'A'
-                except ValueError:
-                    logging.warning(f"Invalid date format in column: {col}")
-                    continue
+        for time_col in time_columns:
+            if pd.notna(row[time_col]):
+                attendance_records[row[time_col]] = 'P'
         
-        # Speed optimization: Pre-generate messages
-        messages = {
-            "student": create_attendance_message(name, roll_no, attendance_records, "student", date_range),
-            "parent": create_attendance_message(name, roll_no, attendance_records, "parent", date_range)
-        }
-        
-        processed_data.append((name, phone_numbers, messages))
+        if attendance_records:
+            # Create messages for each available contact
+            for contact_type, phone_number in contacts.items():
+                if phone_number and phone_number != 'nan' and phone_number != 'NO PHONE':
+                    message = create_attendance_message(
+                        name=row['NAME'],
+                        roll_no=row['EMP_CODE'],
+                        phone_number=phone_number,
+                        attendance_records=attendance_records,
+                        recipient_type=contact_type,
+                        date=current_date
+                    )
+                    messages.append({
+                        'name': row['NAME'],
+                        'phone_number': f"+91{phone_number.replace('+91', '')}",  # Ensure proper format
+                        'message': message,
+                        'recipient': contact_type
+                    })
     
-    return processed_data
+    return messages
+
+def create_attendance_message(name, roll_no, phone_number, attendance_records, recipient_type, date):
+    """Create attendance message showing IN/OUT times in 12-hour format."""
+    greeting = "*🗓 Greetings from Anees Defence Career Institute Pune (ADCI) 🗓*\n\n"
+    
+    # Customize greeting based on recipient
+    recipient_greeting = {
+        'mother': f'Dear Mother of {name}',
+        'father': f'Dear Father of {name}',
+        'self': f'Dear {name}'
+    }.get(recipient_type, f'Dear {name}')
+    
+    message = (
+        f"{greeting}"
+        f"{recipient_greeting},\n\n"
+        f"🧾 Attendance details for {date}:\n\n"
+        f"📝 Name: {name}\n"
+        f"📝 EMP Code: {roll_no}\n\n"
+        f"Today's IN/OUT Times:\n"
+    )
+    
+    # Sort times chronologically and convert to 12-hour format
+    times = sorted(attendance_records.keys())
+    for i, time in enumerate(times, 1):
+        status = "IN" if i % 2 != 0 else "OUT"
+        time_12hr = convert_to_12hour(time)
+        message += f"⏰ {status} Time: {time_12hr}\n"
+    
+    message += "\nThank you for your attention to this matter.\n"
+    message += "Best regards,\nADCI Team"
+    
+    return message
 
 def send_attendance_messages(file_path, status_label):
     """Main function to process and send attendance messages."""
     try:
         # Load and pre-process data
-        df = pd.read_csv(file_path) if file_path.endswith('.csv') else pd.read_excel(file_path)
-        df.columns = df.columns.str.strip()
-        
-        processed_data = process_attendance_data(df)
+        df = read_attendance_data(file_path)
+        messages = process_attendance_data(df)
         messages_sent = 0
-        total = len(processed_data)
+        total = len(messages)
         
-        for idx, (name, phone_numbers, messages) in enumerate(processed_data, 1):
-            status_label.config(text=f"Processing {name} ({idx}/{total})")
+        for idx, message in enumerate(messages, 1):
+            status_label.config(text=f"Processing {message['name']} ({idx}/{total})")
             status_label.update()
             
             # Send to student
-            if phone_numbers["student"]:
-                if send_whatsapp_message_via_url(phone_numbers["student"], messages["student"], name, "student"):
-                    messages_sent += 1
-            
-            # Send to parents
-            for recipient in ["father", "mother"]:
-                if phone_numbers[recipient]:
-                    if send_whatsapp_message_via_url(phone_numbers[recipient], messages["parent"], name, recipient):
-                        messages_sent += 1
+            if send_whatsapp_message_via_url(message['phone_number'], message['message'], message['name'], message['recipient']):
+                messages_sent += 1
         
         status_label.config(text=f"Complete! Messages sent: {messages_sent}")
         
@@ -209,7 +216,7 @@ class AttendanceApp(TkinterDnD.Tk):
         """Create all UI widgets with optimized settings."""
         self.label = tk.Label(
             self, 
-            text="Drop CSV/XLSX file here",
+            text="Drop Excel file here",
             width=60, height=10,
             bg="#ecf0f1", fg="#2c3e50",
             relief="groove"

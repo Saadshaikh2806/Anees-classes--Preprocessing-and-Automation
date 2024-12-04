@@ -67,9 +67,9 @@ def get_exam_total_marks(exam_name):
         return "720"
     elif "CLAT" in exam_upper:
         return "120"
-    elif "MHT-CET " in exam_upper:
+    elif "MHT-CET" in exam_upper:
         return "50"
-    return "0"  # Default case
+    return "50"  # Default case
 
 def create_exam_message(name, roll_no, exams, recipient_type, exam_category):
     """Generic message creator for all exam types."""
