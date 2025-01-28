@@ -1,0 +1,107 @@
+// Function to lock the sheet based on the sheet name date
+function lockSheetAt7AM() {
+  var sheets = SpreadsheetApp.getActiveSpreadsheet().getSheets();
+  var today = new Date();
+  today.setHours(0, 0, 0, 0); // Set time to midnight for accurate date comparison
+  Logger.log('Today: ' + today);
+
+  sheets.forEach(function(sheet) {
+    var sheetName = sheet.getName();
+    Logger.log('Checking sheet: ' + sheetName);
+    
+    // Extract date from the sheet name (assumes format: DD/MMM/YYYY)
+    var dateParts = sheetName.split('/');
+    if (dateParts.length === 3) {
+      var day = parseInt(dateParts[0], 10);
+      var month = getMonthFromName(dateParts[1]);
+      var year = parseInt(dateParts[2], 10);
+      
+      var sheetDate = new Date(year, month, day); // Date object for the sheet date
+      Logger.log('Sheet Date: ' + sheetDate);
+
+      // Check if the sheet date is earlier than today
+      if (sheetDate < today) {
+        Logger.log('Locking sheet: ' + sheetName + ' (before today)');
+        
+        // Lock the entire sheet
+        var protection = sheet.protect().setDescription('Sheet locked before today');
+        protection.removeEditors(protection.getEditors());
+        
+        Logger.log('Sheet locked successfully.');
+      } else {
+        Logger.log('Sheet date is not before today for sheet: ' + sheetName);
+      }
+    } else {
+      Logger.log('Sheet name does not contain a valid date: ' + sheetName);
+    }
+  });
+}
+
+// Helper function to convert month names to their numerical equivalent (e.g., OCT -> 9)
+function getMonthFromName(monthName) {
+  var months = {
+    'JAN': 0,
+    'FEB': 1,
+    'MAR': 2,
+    'APR': 3,
+    'MAY': 4,
+    'JUN': 5,
+    'JUL': 6,
+    'AUG': 7,
+    'SEP': 8,
+    'OCT': 9,
+    'NOV': 10,
+    'DEC': 11
+  };
+  return months[monthName.toUpperCase()] || -1;
+}
+
+// Set a time-based trigger to lock the sheet at 7 AM every day
+function createLockTrigger() {
+  // Delete any existing triggers to avoid overlap
+  deleteAllTriggers();
+  
+  // Schedule the lock to happen every day at 7 AM
+  ScriptApp.newTrigger('lockSheetAt7AM')
+    .timeBased()
+    .everyDays(1) // Set to run every day
+    .atHour(7) // At 7 AM
+    .nearMinute(0) // Near minute 0 (exactly on the hour)
+    .create();
+  
+  Logger.log('Time-based trigger set to lock the sheets every day at 7 AM.');
+}
+
+// Function to delete all existing triggers to avoid multiple locks
+function deleteAllTriggers() {
+  var triggers = ScriptApp.getProjectTriggers();
+  
+  for (var i = 0; i < triggers.length; i++) {
+    ScriptApp.deleteTrigger(triggers[i]);
+  }
+  
+  Logger.log('All existing triggers deleted.');
+}
+
+// Unlock all cells function (for admin use)
+function unlockAllCells() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var protections = sheet.getProtections(SpreadsheetApp.ProtectionType.RANGE);
+  
+  for (var i = 0; i < protections.length; i++) {
+    if (protections[i].getDescription() === 'Sheet locked before today') {
+      protections[i].remove();
+    }
+  }
+  
+  SpreadsheetApp.getUi().alert('All locked cells have been unlocked.');
+}
+
+// Add the custom menu when the spreadsheet opens
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Custom Menu')
+    .addItem('Unlock All Cells', 'unlockAllCells')
+    .addItem('Create Lock Trigger for 7 AM', 'createLockTrigger')
+    .addToUi();
+}
