@@ -39,7 +39,6 @@ def send_whatsapp_message_via_url(phone_number, message, name, recipient):
         if os.name == 'nt':  # Windows
             time.sleep(8)
         
-        
         pyautogui.press("enter")
         time.sleep(1)
         pyautogui.hotkey("ctrl", "w")
@@ -60,18 +59,18 @@ def get_exam_total_marks(exam_name):
     if "MATHS" in exam_upper:
         return "300"
     elif "GAT" in exam_upper:
-        return "600"
+        return {"ENGLISH": "200", "GAT": "400"}  # Modified for GAT exam
     elif "JEE" in exam_upper:
         return "360"
     elif "NEET" in exam_upper:
         return "720"
     elif "CLAT" in exam_upper:
         return "120"
-    elif "MHT-CET" in exam_upper:
-        return "50"
+    elif "MHTCET" in exam_upper:
+        return "150"
     return "50"  # Default case
 
-def create_exam_message(name, roll_no, exams, recipient_type, exam_category):
+def create_exam_message(name, exams, recipient_type, exam_category):
     """Generic message creator for all exam types."""
     greeting = "*🗓 Greetings from Anees Defence Career Institute Pune (ADCI) 🗓*\n\n"
     
@@ -86,12 +85,21 @@ def create_exam_message(name, roll_no, exams, recipient_type, exam_category):
         message = f"{greeting}Dear {name},\n\n🧾 Your Academic progress for the following {category_texts[exam_category]} is as below: 🧾\n\n"
     else:
         message = f"{greeting}Dear Parent,\n\n🧾 The Academic progress detail of your ward {name} for the following {category_texts[exam_category]} is as below: 🧾\n\n"
-    
-    message += f"📝 Roll No: {roll_no}\n\n"
 
-    for exam_name, marks in exams.items():
-        total_marks = get_exam_total_marks(exam_name)
-        message += f"📊 {exam_name} Test details -\nTotal Marks - {marks}/{total_marks}\n\n"
+    for exam_name, marks_data in exams.items():
+        if isinstance(marks_data, dict) and 'ENGLISH' in marks_data:  # For GAT exam with ENGLISH and GAT components
+            message += f"📊 {exam_name} Test details -\n"
+            if marks_data.get('ENGLISH') == "Absent" and marks_data.get('GAT') == "Absent":
+                message += "Total Marks - Absent\n\n"
+            else:
+                message += f"ENGLISH Marks - {marks_data['ENGLISH']}/200\n"
+                message += f"GAT Marks - {marks_data['GAT']}/400\n\n"
+        else:  # For other exams including MATHS
+            total_marks = get_exam_total_marks(exam_name)
+            if marks_data == "Absent":
+                message += f"📊 {exam_name} Test details -\nTotal Marks - Absent\n\n"
+            else:
+                message += f"📊 {exam_name} Test details -\nTotal Marks - {marks_data}/{total_marks}\n\n"
 
     notes = {
         "nda": "📌 Note- NDA WEEKLY MATHS/GAT- OBJECTIVE TESTS",
@@ -113,7 +121,6 @@ def process_data(df):
     
     for _, row in df.iterrows():
         name = row['Name']
-        roll_no = row['Roll No']
         
         phone_numbers = {
             "student": f"+91{remove_trailing_zeros(row['Student Contact No.'])}" if pd.notna(row['Student Contact No.']) else None,
@@ -121,7 +128,6 @@ def process_data(df):
             "mother": f"+91{remove_trailing_zeros(row['Mother/Guardian Contact No.'])}" if pd.notna(row['Mother/Guardian Contact No.']) else None
         }
         
-        # Categorize exams
         exam_categories = {
             "nda": {},
             "jee_neet": {},
@@ -129,32 +135,64 @@ def process_data(df):
             "mhtcet": {}
         }
         
-        for i in range(1, (len(df.columns) - 4) // 2 + 1):
-            if f'Exam{i}' in df.columns and f'Total Marks{i}' in df.columns:
-                exam_name = row[f'Exam{i}']
-                marks = row[f'Total Marks{i}']
+        num_exams = sum(1 for col in df.columns if col.startswith('Exam'))
+        
+        for i in range(1, num_exams + 1):
+            
+            exam_name = row.get(f'Exam{i}')
+            
+            if pd.notna(exam_name) and str(exam_name).strip():
+                exam_upper = str(exam_name).upper()
                 
-                if pd.notna(exam_name) and str(exam_name).strip():
-                    marks = remove_trailing_zeros(marks) if pd.notna(marks) else "Absent"
+                if "GAT" in exam_upper:
+                    # Handle GAT exam with ENGLISH and GAT components
+                    english_marks = row.get(f'ENGLISH{i}', None)
+                    gat_marks = row.get(f'GAT{i}', None)
                     
-                    if isinstance(exam_name, str):
-                        exam_upper = exam_name.upper()
-                        if "JEE" in exam_upper or "NEET" in exam_upper:
-                            exam_categories["jee_neet"][exam_name] = marks
-                        elif "CLAT" in exam_upper:
-                            exam_categories["clat"][exam_name] = marks
-                        elif "MHTCET" in exam_upper:
-                            exam_categories["mhtcet"][exam_name] = marks
-                        else:  # NDA/GAT/MATHS
-                            exam_categories["nda"][exam_name] = marks
+                    # Debug logging
+                    logging.info(f"Processing GAT exam for {name}:")
+                    logging.info(f"English marks: {english_marks}, GAT marks: {gat_marks}")
+                    
+                    # Only mark as Absent if the marks are explicitly NaN or None
+                    english_val = "Absent" if pd.isna(english_marks) else remove_trailing_zeros(english_marks)
+                    gat_val = "Absent" if pd.isna(gat_marks) else remove_trailing_zeros(gat_marks)
+                    
+                    exam_categories["nda"][exam_name] = {
+                        "ENGLISH": english_val,
+                        "GAT": gat_val
+                    }
+                elif "MATHS" in exam_upper:
+                    marks = row.get(f'Total Marks{i}', None)
+                    marks_val = "Absent" if pd.isna(marks) else remove_trailing_zeros(marks)
+                    exam_categories["nda"][exam_name] = marks_val
+                elif "JEE" in exam_upper:
+                    marks = row.get(f'Total Marks{i}', None)
+                    marks_val = "Absent" if pd.isna(marks) else remove_trailing_zeros(marks)
+                    exam_categories["jee_neet"][exam_name] = marks_val
+                elif "NEET" in exam_upper:
+                    marks = row.get(f'Total Marks{i}', None)
+                    marks_val = "Absent" if pd.isna(marks) else remove_trailing_zeros(marks)
+                    exam_categories["jee_neet"][exam_name] = marks_val
+                elif "CLAT" in exam_upper:
+                    marks = row.get(f'Total Marks{i}', None)
+                    marks_val = "Absent" if pd.isna(marks) else remove_trailing_zeros(marks)
+                    exam_categories["clat"][exam_name] = marks_val
+                elif "MHTCET" in exam_upper:
+                    marks = row.get(f'Total Marks{i}', None)
+                    marks_val = "Absent" if pd.isna(marks) else remove_trailing_zeros(marks)
+                    exam_categories["mhtcet"][exam_name] = marks_val
+                else:
+                    marks = row.get(f'Total Marks{i}', None)
+                    marks_val = "Absent" if pd.isna(marks) else remove_trailing_zeros(marks)
+                    exam_categories["nda"][exam_name] = marks_val
         
         # Generate messages for each category
         messages = {}
         for category, exams in exam_categories.items():
-            if exams:
+            if exams:  # Only create messages if there are exams in the category
                 messages[category] = {
-                    "student": create_exam_message(name, roll_no, exams, "student", category),
-                    "parent": create_exam_message(name, roll_no, exams, "parent", category)
+                    "student": create_exam_message(name, exams, "student", category),
+                    "parent": create_exam_message(name, exams, "parent", category)
                 }
             else:
                 messages[category] = {"student": None, "parent": None}

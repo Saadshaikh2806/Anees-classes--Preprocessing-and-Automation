@@ -15,8 +15,11 @@ def load_data(file_path):
         raise ValueError(f"Unsupported file format: {file_path}")
 
 
-def filter_columns(df):
-    allowed_columns = {'Name', 'Exam', 'Total Marks'}
+def filter_columns(df, is_gat_exam=False):
+    if is_gat_exam:
+        allowed_columns = {'Name', 'Exam', 'ENGLISH', 'GAT'}
+    else:
+        allowed_columns = {'Name', 'Exam', 'Total Marks'}
     return df[[col for col in df.columns if col in allowed_columns]]
 
 
@@ -36,19 +39,30 @@ def gather_contacts(contact_folder):
         except Exception as e:
             print(f"Error processing file '{filename}': {e}")
 
-    # Remove duplicate names, keeping the last occurrence
     contacts_df.drop_duplicates(subset=['Name'], keep='last', inplace=True)
     return contacts_df
 
 
-def merge_exam_data(merged_df, exam_file, exam_index):
+def merge_exam_data(merged_df, exam_file, exam_index, is_gat_exam=False):
     exam_df = load_data(exam_file)
     if 'Name' not in exam_df.columns:
         raise ValueError(f"Missing 'Name' column in {exam_file}")
 
     # Filter and rename columns for merging
-    exam_df = filter_columns(exam_df)
-    new_columns = {'Exam': f'Exam{exam_index}', 'Total Marks': f'Total Marks{exam_index}'}
+    exam_df = filter_columns(exam_df, is_gat_exam)
+    
+    if is_gat_exam:
+        new_columns = {
+            'Exam': f'Exam{exam_index}',
+            'ENGLISH': f'ENGLISH{exam_index}',
+            'GAT': f'GAT{exam_index}'
+        }
+    else:
+        new_columns = {
+            'Exam': f'Exam{exam_index}',
+            'Total Marks': f'Total Marks{exam_index}'
+        }
+    
     exam_df = exam_df.rename(columns=new_columns)
 
     # Merge data and remove duplicate names
@@ -67,7 +81,9 @@ def merge_by_keyword(folder, grade, keywords, output_folder):
         for file_path in keyword_files:
             print(f"Processing {file_path}...")
             try:
-                merged_df = merge_exam_data(merged_df, file_path, exam_index)
+                # Check if current file is a GAT exam
+                is_gat_exam = 'GAT' in keyword.upper()
+                merged_df = merge_exam_data(merged_df, file_path, exam_index, is_gat_exam)
                 exam_index += 1
             except Exception as e:
                 print(f"Error processing file {file_path}: {e}")
@@ -136,7 +152,7 @@ def auto_merge_evalbee(folder, contact_folder, output_folder):
 
 def main():
     evalbee_folder = 'Evalbee'
-    contact_folder = 'Data'  # Folder containing contact details
+    contact_folder = 'Data'
     output_folder = 'Output'
 
     try:
