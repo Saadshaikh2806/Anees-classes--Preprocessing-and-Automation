@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 2400" width="800" height="2400">
+  <defs>
+    <style>
+      .bg { fill: #f0f0f0; }
+      .poster-bg { fill: #ffffff; }
+      .header { fill: #003366; }
+      .header-text { fill: #ffffff; font-family: Arial, sans-serif; font-weight: bold; }
+      .class-section { fill: #ffffff; stroke: #cccccc; }
+      .class-title { fill: #4a90e2; }
+      .title-text { fill: #ffffff; font-family: Arial, sans-serif; font-size: 14px; font-weight: bold; }
+      .info-text { font-family: Arial, sans-serif; font-size: 12px; }
+      .info-label { font-weight: bold; }
+      .squadron { font-style: italic; fill: #666666; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" class="bg" />
+  
+  <!-- Poster background -->
+  <rect x="50" y="50" width="700" height="2300" rx="10" ry="10" class="poster-bg" />
+  
+  <!-- Header -->
+  <rect x="50" y="50" width="700" height="100" rx="10" ry="10" class="header" />
+  <text x="400" y="100" text-anchor="middle" class="header-text" font-size="24">ADCI ACADEMY PUNE</text>
+  <text x="400" y="130" text-anchor="middle" class="header-text" font-size="18">Class Mentor List</text>
+
+  <!-- Class XII-B1 -->
+  <g transform="translate(70, 170)">
+    <rect width="660" height="150" rx="5" ry="5" class="class-section" />
+    <rect width="660" height="30" rx="5" ry="5" class="class-title" />
+    <text x="10" y="20" class="title-text">CLASS XII-B1 (Second Building First Floor)</text>
+    <text x="10" y="50" class="info-text"><tspan class="info-label">Cluster:</tspan> SONALI MAM</text>
+    <text x="10" y="70" class="info-text"><tspan class="info-label">Mentor:</tspan> UDAY SIR / KULDEEP SIR</text>
+    <text x="10" y="90" class="info-text"><tspan class="info-label">Counselor:</tspan> AFSHA, LEENA MAM</text>
+    <text x="10" y="110" class="info-text"><tspan class="info-label">Buddy:</tspan> SAMEER (SRM) / AVINASH NIKALJE</text>
+    <text x="10" y="140" class="squadron">Squadron: Parakram</text>
+  </g>
+
+  <!-- Class XII-B2 -->
+  <g transform="translate(70, 340)">
+    <rect width="660" height="150" rx="5" ry="5" class="class-section" />
+    <rect width="660" height="30" rx="5" ry="5" class="class-title" />
+    <text x="10" y="20" class="title-text">CLASS XII-B2 (Second Building Second Floor)</text>
+    <text x="10" y="50" class="info-text"><tspan class="info-label">Cluster:</tspan> SADAF MAM</text>
+    <text x="10" y="70" class="info-text"><tspan class="info-label">Mentor:</tspan> SHAHRUKH SIR / MOHTASIM SIR</text>
+    <text x="10" y="90" class="info-text"><tspan class="info-label">Counselor:</tspan> AMRUTA, RUKSANA / VANDANA MAM</text>
+    <text x="10" y="110" class="info-text"><tspan class="info-label">Buddy:</tspan> AZHAF / SUNIL K / ISMAEL</text>
+    <text x="10" y="140" class="squadron">Squadron: Kargil</text>
+  </g>
+
+  <!-- Class XII-B3 -->
+  <g transform="translate(70, 510)">
+    <rect width="660" height="150" rx="5" ry="5" class="class-section" />
+    <rect width="660" height="30" rx="5" ry="5" class="class-title" />
+    <text x="10" y="20" class="title-text">CLASS XII-B3 (Terrace)</text>
+    <text x="10" y="50" class="info-text"><tspan class="info-label">Cluster:</tspan> SHEEBA MA'AM</text>
+    <text x="10" y="70" class="info-text"><tspan class="info-label">Mentor:</tspan> ASAD SIR / NAUSHAD SIR</text>
+    <text x="10" y="90" class="info-text"><tspan class="info-label">Counselor:</tspan> SANIYA MAM, SADAF / SUNITA</text>
+    <text x="10" y="110" class="info-text"><tspan class="info-label">Buddy:</tspan> MONDAL SIR / AYAZ / D SARKATE</text>
+    <text x="10" y="140" class="squadron">Squadron: RHINO</text>
+  </g>
+
+  <!-- Class XII-B4 -->
+  <g transform="translate(70, 680)">
+    <rect width="660" height="150" rx="5" ry="5" class="class-section" />
+    <rect width="660" height="30" rx="5" ry="5" class="class-title" />
+    <text x="10" y="20" class="title-text">CLASS XII-B4 (Right Middle)</text>
+    <text x="10" y="50" class="info-text"><tspan class="info-label">Cluster:</tspan> FARHANA MAM</text>
+    <text x="10" y="70" class="info-text"><tspan class="info-label">Mentor:</tspan> SOHAIL SIR / AMAN KUMAR SIR / HRUSHIKESH SIR</text>
+    <text x="10" y="90" class="info-text"><tspan class="info-label">Counselor:</tspan> HEENA MULLA MAM, RAISA MAM</text>
+    <text x="10" y="110" class="info-text"><tspan class="info-label">Buddy:</tspan> SWAPNIL / MOHD SHAIKH</text>
+    <text x="10" y="140" class="squadron">Squadron: VIJAY</text>
+  </g>
+
+  <!-- Class XI-B1 -->
+  <g transform="translate(70, 850)">
+    <rect width="660" height="180" rx="5" ry="5" class="class-section" />
+    <rect width="660" height="30" rx="5" ry="5" class="class-title" />
+    <text x="10" y="20" class="title-text">CLASS XI-B1 (SPI)(NEET ROOM)</text>
+    <text x="10" y="50" class="info-text"><tspan class="info-label">Cluster:</tspan> SANGEETA MAM/RAISA MAM, KAVITA MAM/HEENA MAM,</text>
+    <text x="10" y="70" class="info-text">LEENA MAM-UNDER CLUSTER SONALI MAM, SANIYA MAM-UNDER CLUSTER SHEEBA MAM</text>
+    <text x="10" y="90" class="info-text"><tspan class="info-label">Mentor:</tspan> AMAN JAMADAR SIR / MUSTAFA SIR</text>
+    <text x="10" y="110" class="info-text"><tspan class="info-label">Counselor:</tspan> Farida, Heena Mulla mam, Leena mam, Saniya mam</text>
+    <text x="10" y="130" class="info-text"><tspan class="info-label">Buddy:</tspan> TEAM KARGIL- CAPT.PAWAR, TEAM VIJAY- KARNALKAR SIR, TEAM</text>
+    <text x="10" y="170" class="squadron">Squadron: PARAKRAM</text>
+  </g>
+
+  <!-- Class XI-B2 -->
+  <g transform="translate(70, 1050)">
+    <rect width="660" height="180" rx="5" ry="5" class="class-section" />
+    <rect width="660" height="30" rx="5" ry="5" class="class-title" />
+    <text x="10" y="20" class="title-text">CLASS XI-B2-STATE (First Building Ground Floor)</text>
+    <text x="10" y="50" class="info-text"><tspan class="info-label">Cluster:</tspan> SANGEETA MAM/RAISA MAM, KAVITA MAM/HEENA MAM,</text>
+    <text x="10" y="70" class="info-text">LEENA MAM-UNDER CLUSTER SONALI MAM, SANIYA MAM-UNDER CLUSTER SHEEBA MAM</text>
+    <text x="10" y="90" class="info-text"><tspan class="info-label">Mentor:</tspan> AFROZ SIR / FATIMA MAM</text>
+    <text x="10" y="110" class="info-text"><tspan class="info-label">Counselor:</tspan> Ruksana, Afsha, Leena mam, Amruta</text>
+    <text x="10" y="130" class="info-text"><tspan class="info-label">Buddy:</tspan> TEAM KARGIL- CAPT.PAWAR, TEAM VIJAY- KARNALKAR SIR,</text>
+    <text x="10" y="150" class="info-text">TEAM PARAKRAM- NIKALJE SIR, TEAM RHINO- MONDAL SIR</text>
+    <text x="10" y="170" class="squadron">Squadron: RHINO</text>
+  </g>
+
+  <!-- Class XI-B3 -->
+  <g transform="translate(70, 1250)">
+    <rect width="660" height="180" rx="5" ry="5" class="class-section" />
+    <rect width="660" height="30" rx="5" ry="5" class="class-title" />
+    <text x="10" y="20" class="title-text">CLASS XI-B3 (First Building First Floor)</text>
+    <text x="10" y="50" class="info-text"><tspan class="info-label">Cluster:</tspan> SANGEETA MAM/RAISA MAM, KAVITA MAM/HEENA MAM,</text>
+    <text x="10" y="70" class="info-text">LEENA MAM-UNDER CLUSTER SONALI MAM, SANIYA MAM-UNDER CLUSTER SHEEBA MAM</text>
+    <text x="10" y="90" class="info-text"><tspan class="info-label">Mentor:</tspan> DEVI SINGH SIR / SADIYA MAM</text>
+    <text x="10" y="110" class="info-text"><tspan class="info-label">Counselor:</tspan> Farida, Shireen, Leena mam, Shruti</text>
+    <text x="10" y="130" class="info-text"><tspan class="info-label">Buddy:</tspan> TEAM KARGIL- CAPT.PAWAR, TEAM VIJAY- KARNALKAR SIR,</text>
+    <text x="10" y="150" class="info-text">TEAM PARAKRAM- NIKALJE SIR, TEAM RHINO- MONDAL SIR</text>
+    <text x="10" y="170" class="squadron">Squadron: PARAKRAM</text>
+  </g>
+
+  <!-- Class XI-B4 & B5 -->
+  <g transform="translate(70, 1450)">
+    <rect width="660" height="180" rx="5" ry="5" class="class-section" />
+    <rect width="660" height="30" rx="5" ry="5" class="class-title" />
+    <text x="10" y="20" class="title-text">CLASS XI-B4 AND B5 JEE/NEET/CBSE (Library/Straight Middle)</text>
+    <text x="10" y="50" class="info-text"><tspan class="info-label">Cluster:</tspan> SANGEETA MAM/RAISA MAM, KAVITA MAM/HEENA MAM,</text>
+    <text x="10" y="70" class="info-text">LEENA MAM-UNDER CLUSTER SONALI MAM, SANIYA MAM-UNDER CLUSTER SHEEBA MAM</text>
+    <text x="10" y="90" class="info-text"><tspan class="info-label">Mentor:</tspan> ISHTIYAQ SIR / MOHSIN SIR</text>
+    <text x="10" y="110" class="info-text"><tspan class="info-label">Counselor:</tspan> Zoya, Heena Mulla mam, Leena mam, Saniya / Amruta</text>
+    <text x="10" y="130" class="info-text"><tspan class="info-label">Buddy:</tspan> TEAM KARGIL- CAPT.PAWAR, TEAM VIJAY- KARNALKAR SIR,</text>
+    <text x="10" y="150" class="info-text">TEAM PARAKRAM- NIKALJE SIR, TEAM RHINO- MONDAL SIR</text>
+    <text x="10" y="170" class="squadron">Squadron: VIJAY</text>
+  </g>
+
+  <!-- Class XI-B6 -->
+  <g transform="translate(70, 1650)">
+    <rect width="660" height="180" rx="5" ry="5" class="class-section" />
+    <rect width="660" height="30" rx="5" ry="5" class="class-title" />
+    <text x="10" y="20" class="title-text">CLASS-XI-B6 (Straight End)</text>
+    <text x="10" y="50" class="info-text"><tspan class="info-label">Cluster:</tspan> SANGEETA MAM/RAISA MAM, KAVITA MAM/HEENA MAM,</text>
+    <text x="10" y="70" class="info-text">LEENA MAM-UNDER CLUSTER SONALI MAM, SANIYA MAM-UNDER CLUSTER SHEEBA MAM</text>
+    <text x="10" y="90" class="info-text"><tspan class="info-label">Mentor:</tspan> NIRMALA MAM / SHILPI MAM / ANJUM MA'AM</text>
+    <text x="10" y="110" class="info-text"><tspan class="info-label">Counselor:</tspan> Raisa mam, Heena Shaikh, Sunita mam, Saniya / Amruta</text>
+    <text x="10" y="130" class="info-text"><tspan class="info-label">Buddy:</tspan> TEAM KARGIL- CAPT.PAWAR, TEAM VIJAY- KARNALKAR SIR,</text>
+    <text x="10" y="150" class="info-text">TEAM PARAKRAM- NIKALJE SIR, TEAM RHINO- MONDAL SIR</text>
+    <text x="10" y="170" class="squadron">Squadron: KARGIL</text>
+  </g>
+
+  <!-- Class XI-B7 -->
+  <g transform="translate(70, 1850)">
+    <rect width="660" height="180" rx="5" ry="5" class="class-section" />
+    <rect width="660" height="30" rx="5" ry="5" class="class-title" />
+    <text x="10" y="20" class="title-text">CLASS-XI-B7 (Satta Room)</text>
+    <text x="10" y="50" class="info-text"><tspan class="info-label">Cluster:</tspan> KAUSAR MAM AND ANGELINA MAM</text>
+    <text x="10" y="70" class="info-text"><tspan class="info-label">Mentor:</tspan> V P SINGH SIR / KAIF SIRAKASH SIR / ANSHAD SIR / AFZAL SIR /</text>
+    <text x="10" y="90" class="info-text">ROHIT RANVE SIR / RAJGURU SIR</text>
+    <text x="10" y="110" class="info-text"><tspan class="info-label">Counselor:</tspan> AFSHA, PREETI, SHIREEN, JOYCE MAM</text>
+    <text x="10" y="130" class="info-text"><tspan class="info-label">Buddy:</tspan> SHIVA, DEEPAK SARKATE</text>
+    <text x="10" y="170" class="squadron">Squadron: VIJAY</text>
+  </g>
+
+</svg>
